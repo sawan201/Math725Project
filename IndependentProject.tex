@@ -1,5 +1,6 @@
 \documentclass[11pt]{article}
 
+% --- Packages ---------------------------------------------------------------
 \usepackage[margin=1in]{geometry}
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{mathtools}
@@ -8,6 +9,7 @@
 \usetikzlibrary{calc,positioning}
 \usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
 
+% --- Theorem environments ---------------------------------------------------
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{proposition}[theorem]{Proposition}
 \newtheorem{lemma}[theorem]{Lemma}
@@ -18,6 +20,7 @@
 \newtheorem{example}[theorem]{Example}
 \newtheorem{remark}[theorem]{Remark}
 
+% --- Custom commands --------------------------------------------------------
 \newcommand{\X}{\mathbf{X}}
 \newcommand{\St}{\mathbf{S}}
 \newcommand{\K}{\mathbf{K}}
@@ -28,11 +31,13 @@
 \newcommand{\diam}{\operatorname{diam}}
 \newcommand{\deglow}{\operatorname{deg}}
 
+% --- Title ------------------------------------------------------------------
 \title{On Distinguishing Trees by Their Chromatic Symmetric Functions: \\
        \large A Report on Martin--Morin--Wagner}
-\author{Math 725 Independent Project}
-\date{}
+\author{Math 725 Independent Project \\ (Final Revised Submission)}
+\date{May 13, 2026}
 
+% ============================================================================
 \begin{document}
 \maketitle
 
@@ -52,6 +57,7 @@ the paper's main open question, supported by computational evidence and
 a partial result.
 \end{abstract}
 
+% ============================================================================
 \section{Introduction}\label{sec:intro}
 
 A central theme in algebraic graph theory is the search for combinatorial
@@ -76,14 +82,16 @@ so $\X_G$ is a symmetric function, homogeneous of degree $|V|$.
 The chromatic polynomial is recovered from $\X_G$ by setting
 $x_1=\cdots=x_k=1$ and $x_i=0$ for $i>k$.  Thus $\X_G$ refines the
 chromatic polynomial.  Stanley showed that $\X_G$ is \emph{not} a
-complete isomorphism invariant on graphs in general, exhibiting two
-non-isomorphic five-vertex graphs with the same chromatic symmetric
-function~\cite{Stanley}.  Whether $\X_T$ is a complete invariant on the
-restricted class of \emph{trees} remains open and is one of the most
-prominent unsolved problems in algebraic combinatorics.  The source
-paper cites Tan's computational verification through $23$ vertices;
-later work of Heil and Ji extends this verification through $29$
-vertices~\cite{Tan,HeilJi}.
+complete isomorphism invariant on graphs in general (i.e., there exist
+two non-isomorphic graphs that share the same value of $\X_G$),
+exhibiting two non-isomorphic five-vertex graphs with the same
+chromatic symmetric function~\cite{Stanley}.  Whether $\X_T$ is a
+complete invariant on the restricted class of \emph{trees}---meaning
+that no two non-isomorphic trees can share the same chromatic symmetric
+function---remains open and is one of the most prominent unsolved
+problems in algebraic combinatorics.  As of this writing, computational
+verification due to Tan~\cite{Tan} confirms the conjecture for trees on
+at most $23$ vertices.
 
 The paper of Martin, Morin, and Wagner~\cite{MMW} attacks this question
 from two complementary angles.  First, they show that $\X_T$ is at least
@@ -94,12 +102,6 @@ sequences of $T$ can be extracted from $\X_T$.  Second, they prove that
 $\X_T$ \emph{does} reconstruct $T$ when $T$ is restricted to certain
 natural sub-classes, including all spiders, several families of
 caterpillars, and (in the unicyclic setting) all squids.
-The paper's main theorem, which recovers the subtree and connector
-polynomials from $\X_T$, is the main engine behind these results: it
-shows that $\X_T$ remembers many ordinary structural statistics of a
-tree.  The caterpillar theorem proved below is a more refined application
-of the same coefficient data, using the special way edge subsets sit
-inside a caterpillar.
 
 The remainder of this report is organized as follows.
 Section~\ref{sec:prelim} fixes notation and reviews symmetric-function
@@ -111,9 +113,12 @@ theorem of this report---a caterpillar reconstruction theorem due to
 Martin--Morin--Wagner---together with a complete, self-contained proof
 in our own words.  Section~\ref{sec:examples} works out two original
 examples.  Section~\ref{sec:conjecture} states a conjecture, supported
-by partial results, and Section~\ref{sec:code} briefly comments on
-computational verification.
+by partial results, and Section~\ref{sec:code} comments on the
+accompanying SageMath implementation.  Appendix~\ref{app:peer-review}
+summarizes the changes made between the draft and final submission in
+response to peer review.
 
+% ============================================================================
 \section{Preliminaries on symmetric functions and trees}\label{sec:prelim}
 
 We follow~\cite{Macdonald,StanleyEC2} for symmetric functions
@@ -149,6 +154,7 @@ denote by $f_i$ the number of leaves attached to $v_i$, called the
 $v_0$ or $v_s$ would itself be a leaf and not lie on the spine), but
 $f_i$ for $0<i<s$ may be zero.
 
+% ============================================================================
 \section{Stanley's expansion and tree-specific structure}\label{sec:expansion}
 
 The starting point of~\cite{MMW} is the following expansion of $\X_G$
@@ -167,11 +173,14 @@ We write $c_\lambda(G)$ for the coefficient of $p_\lambda$ in the
 power-sum expansion of $\X_G$, so that
 $\X_G = \sum_{\lambda\vdash n} c_\lambda(G)\,p_\lambda$.
 
-When $G=T$ is a tree, every $A\subseteq E(T)$ is acyclic, so the
-spanning subgraph $(V,A)$ has exactly $n-|A|$ components, and hence
-$\ell(\type(A)) = n-|A|$.  In particular all edge subsets of a fixed
-type contribute the same sign $(-1)^{|A|}$, and we obtain the clean
-formula
+When $G=T$ is a tree, the expansion~\eqref{eq:expansion} simplifies
+dramatically.  The reason is that every $A\subseteq E(T)$ is necessarily
+acyclic, so the spanning subgraph $(V,A)$ has exactly $n-|A|$ connected
+components.  This means $\ell(\type(A)) = n-|A|$, and consequently the
+length of $\type(A)$ alone determines $|A|$ and hence the sign
+$(-1)^{|A|}$.  In particular, all edge subsets $A$ with the same type
+$\lambda$ contribute the same sign $(-1)^{n-\ell(\lambda)}$ to
+$c_\lambda(T)$, and we obtain the clean formula
 \begin{equation}\label{eq:tree-cl}
    c_\lambda(T)
    \;=\;(-1)^{n-\ell(\lambda)}
@@ -180,6 +189,7 @@ formula
 Equation~\eqref{eq:tree-cl} is the combinatorial linchpin of the entire
 paper, and we shall use it repeatedly.
 
+% ============================================================================
 \section{Recovering classical invariants}\label{sec:invariants}
 
 We summarize the basic invariants of a graph (or tree) that are
@@ -217,6 +227,7 @@ explicit linear formula~\cite[Thm.~1]{MMW}.  The path sequence appears
 as the coefficients of $q^i r^2$ in $\St_T$, and the star sequence
 (equivalent to the degree sequence) as the coefficients of $q^k r^k$.
 
+% ============================================================================
 \section{The main theorem: caterpillars with distinct leaf numbers}\label{sec:thm}
 
 The principal result we shall prove is the caterpillar reconstruction
@@ -235,8 +246,8 @@ isomorphism by its chromatic symmetric function $\X_T$.
 
 \begin{proof}
 Fix the caterpillar $T$ as in the statement, and set
-$n = |V(T)| = (s+1) + \sum_{i=0}^{s} f_i$ and
-$L \subseteq E(T)$ the set of leaf edges of $T$.  Write
+$n = |V(T)| = (s+1) + \sum_{i=0}^{s} f_i$.  Let $L \subseteq E(T)$
+denote the set of leaf edges of $T$, and write
 $E_{\mathrm{spine}} = \{e_1,\ldots,e_s\}$ for the spine edges, where
 $e_i = v_{i-1}v_i$.  Throughout, partitions are equated with their
 multisets of parts.
@@ -255,9 +266,12 @@ so this is enough.
 the supersets of $L$.}
 Suppose $A\subseteq E(T)$ has $\type(A)$ singleton-free, i.e.\ every
 component of the spanning subgraph $(V,A)$ has order $\geq 2$.  In
-particular, every leaf $w$ of $T$ lies in a component of size $\geq 2$,
-which forces $A$ to contain the unique edge incident to $w$.  Hence
-$L\subseteq A$.
+particular, every leaf $w$ of $T$ lies in a component of size $\geq 2$.
+Since the unique neighbor of a leaf is its sole neighbor in $T$, the
+only way for $w$ to belong to a component of size $\geq 2$ in $(V,A)$
+is for the leaf edge incident to $w$ to lie in $A$; otherwise $w$ is
+isolated in $(V,A)$ and forms a singleton component, contradicting our
+assumption.  This forces $L\subseteq A$.
 
 Conversely, if $A\supseteq L$, then for every spine vertex $v_i$ the
 component of $(V,A)$ containing $v_i$ contains at least the $f_i\geq 1$
@@ -272,11 +286,11 @@ $B\subseteq E_{\mathrm{spine}}$.
 
 \medskip\noindent
 \textbf{Step 2: Identifying $\lambda := \type(L)$.}
-Starting from the spanning subgraph $(V,L)$, the $s+1$ nontrivial
-components have vertex sets $\{v_i\}$ together with the leaves attached
-to $v_i$.  Adding the $|B|$ spine edges in $B$ merges exactly $|B|$
-adjacent pairs of these components, since the spine is a path and hence
-$B$ is acyclic.  Therefore
+With $A = L \cup B$, removing the $|B|$ edges of $B$ from
+$L\cup E_{\mathrm{spine}} = E(T)$ partitions $T$ into $|B|+1$ subtrees,
+hence merges components of $(V,L)$ as follows: the $s+1$ components
+$\{v_i\}\cup\{\text{leaves at }v_i\}$ of $(V,L)$ are joined into
+exactly $(s+1)-|B|$ groups by the spine edges in $B$.  Thus
 $\ell(\type(L\cup B)) = (s+1)-|B|$, and the maximum length is achieved
 exactly when $B=\emptyset$.
 
@@ -311,40 +325,39 @@ size $f_{i-1}+f_i+2$; the other $s-1$ components are unaffected.  Hence
 \]
 where we manipulate $\lambda$ as a multiset of parts.
 
+\emph{Claim: the partitions $\mu_1,\ldots,\mu_s$ are pairwise distinct.}
+Suppose $\mu_i = \mu_j$ as multisets, with $i\neq j$.  Comparing
+multisets, the symmetric difference $\mu_i\,\triangle\,\lambda$ equals
+$\{f_{i-1}+1,\;f_i+1,\;f_{i-1}+f_i+2\}$, and similarly for $\mu_j$.
+The element $f_{i-1}+f_i+2$ strictly exceeds both $f_{i-1}+1$ and
+$f_i+1$ (because each $f_k\geq 1$, hence
+$f_{i-1}+f_i+2\geq f_{i-1}+1+f_i \geq \max(f_{i-1},f_i)+2$).  Hence in
+either symmetric difference, the merged part is the unique maximum.
+Equating the symmetric differences forces
+$f_{i-1}+f_i+2 = f_{j-1}+f_j+2$ and
+$\{f_{i-1}+1,\,f_i+1\}=\{f_{j-1}+1,\,f_j+1\}$, i.e.\
+$\{f_{i-1},f_i\}=\{f_{j-1},f_j\}$.
+Since the $f_k$ are pairwise distinct, this forces
+$\{i-1,i\}=\{j-1,j\}$, hence $i=j$.  This contradicts our assumption,
+proving the claim.
+
 By Step~1 and the length count from Step~2, the edge subsets with
 $\type$ singleton-free of length exactly $s$ are precisely
-$L\cup\{e_1\},\ldots,L\cup\{e_s\}$.  Thus the relevant partitions are
-exactly $\mu_1,\ldots,\mu_s$, counted with multiplicity.  We next explain
-why, under the distinctness hypothesis, each $\mu_i$ identifies the
-corresponding unordered adjacent pair of leaf numbers.
-
-Since the parts of $\lambda$ are pairwise distinct, the multiset
-difference between $\lambda$ and the largest common submultiset of
-$\lambda$ and $\mu_i$ consists of exactly the two deleted parts
-$f_{i-1}+1$ and $f_i+1$.  This remains true even if the new part
-$f_{i-1}+f_i+2$ happens to equal another part of $\lambda$, because we
-compare multisets with multiplicity.  Therefore $\mu_i$ determines the
-unordered pair
-\[
-   \{f_{i-1}+1,\,f_i+1\},
-\]
-and hence determines the unordered pair $\{f_{i-1},f_i\}$.
-
-If two different spine edges produced the same partition $\mu$, the
-preceding paragraph would give the same unordered pair of leaf numbers
-for both edges.  Since the $f_k$ are pairwise distinct, that unordered
-pair occurs for only one edge of the path.  Hence the partitions
-$\mu_1,\ldots,\mu_s$ are pairwise distinct, and the set
-$\{\mu_1,\ldots,\mu_s\}$ is determined by $\X_T$ as the set of
-singleton-free partitions $\mu$ of $n$ with $\ell(\mu)=s$ and
-$c_\mu(T)\neq 0$.
+$L\cup\{e_1\},\ldots,L\cup\{e_s\}$.  By the claim, these contribute
+to $s$ \emph{distinct} coefficients $c_{\mu_1}(T),\ldots,c_{\mu_s}(T)$,
+each equal to $(-1)^{n-s}$.  Therefore the multiset
+$\{\mu_1,\ldots,\mu_s\}$ is exactly the set of singleton-free
+partitions $\mu$ of $n$ with $\ell(\mu)=s$ and $c_\mu(T)\neq 0$, and is
+likewise determined by $\X_T$.
 
 \medskip\noindent
 \textbf{Step 4: Reconstructing the leaf-number sequence.}
-From each partition $\mu_i$, compare it with $\lambda$ as a multiset and
-record the two parts of $\lambda$ that are deleted.  Subtracting $1$
-from those two parts gives exactly the unordered adjacent pair
-$\{f_{i-1},f_i\}$.
+Because the parts of $\lambda$ are pairwise distinct, for each
+$\mu_i$ there is a uniquely determined unordered pair $\{a_i,b_i\}$ of
+parts of $\lambda$ that are absent from $\mu_i$, and a uniquely
+determined ``new'' part $a_i+b_i$ in $\mu_i$.  Step~3 shows that
+$\{a_i,b_i\} = \{f_{i-1}+1,\,f_i+1\}$, equivalently
+$\{a_i-1,\,b_i-1\}=\{f_{i-1},\,f_i\}$.
 
 Form an auxiliary graph $H$ on the vertex set
 $V(H) = \{f_0,f_1,\ldots,f_s\}$ (a set of $s+1$ \emph{distinct}
@@ -368,6 +381,7 @@ appear as multisets, and hence to reconstruct~$T$.  This relaxation is
 mentioned in passing in~\cite[\S 4]{MMW}.
 \end{remark}
 
+% ============================================================================
 \section{Worked examples}\label{sec:examples}
 
 We work two examples that do not appear in~\cite{MMW}.  The first
@@ -376,6 +390,7 @@ and verifies the identities of Proposition~\ref{prop:invariants}.  The
 second illustrates Theorem~\ref{thm:cat} on a caterpillar with three
 spine vertices.
 
+%----------------------------------------------------------------------------
 \subsection{Example: full power-sum expansion of a five-vertex tree}\label{ex:1}
 
 Let $T$ be the tree on $n=5$ vertices with vertex set
@@ -407,7 +422,11 @@ A picture is shown below.
 
 We compute $\X_T = \sum_{A\subseteq E(T)} (-1)^{|A|}\,p_{\type(A)}$ by
 enumerating all $2^4=16$ edge subsets $A\subseteq E(T)$ and tabulating
-their types.
+their types.  In the table below, the rows are organized by $|A|$;
+each row groups the subsets that share the same type, lists their
+component sizes, and records the resulting partition $\type(A)$.  The
+total signed contribution to $c_\lambda(T)$ is then read off as
+$(-1)^{|A|}$ times the row's multiplicity.
 
 \begin{center}
 \begin{tabular}{c|c|c|c}
@@ -447,227 +466,278 @@ We now verify each part of Proposition~\ref{prop:invariants}:
    \item For $j=3$ we have $|c_{(3,1,1)}(T)| = 4$, and indeed $T$ has
          $4$ subtrees on $3$ vertices: the three paths
          $\ell_0v_0v_1$, $v_0v_1\ell_1$, $v_0v_1\ell_1'$, and the
-         two-edge path $\ell_1v_1\ell_1'$.  Similarly $|c_{(2,2,1)}|$ does
-         \emph{not} count subtrees, only single-component contributions
-         from edge sets of type $(2,2,1)$.
-   \item $|c_{(4,1)}(T)| = 3$, which equals the number of leaves of $T$
-         (namely $\ell_0,\ell_1,\ell_1'$).
+         claw $\ell_1v_1\ell_1'$.
+   \item $|c_{(4,1)}(T)| = 3$, matching the $3$ leaves of $T$.
+   \item The path sequence is $(\pi_1,\pi_2,\pi_3) = (4,4,2)$
+         (counting the four single edges, the four 2-edge paths, and
+         the two 3-edge paths $\ell_0v_0v_1\ell_1$ and
+         $\ell_0v_0v_1\ell_1'$); the degree sequence is
+         $(\delta_1,\delta_2,\delta_3) = (3,1,1)$.  Both are easily
+         checked to be consistent with the data above.
 \end{enumerate}
 
-The path sequence and degree sequence of $T$ are also visible:
-$\delta_1(T) = 3$ (leaves), $\delta_2(T) = 1$ (vertex $v_0$),
-$\delta_3(T)=1$ (vertex $v_1$); the path counts are
-$\pi_1 = 4$, $\pi_2 = 4$, $\pi_3=2$, $\pi_4=0$.  These can be read off
-from the corresponding coefficients in the subtree polynomial
-$\St_T(q,r)$, which Theorem~1 of~\cite{MMW} extracts from~\eqref{eq:XT5}
-by the linear formula given there.
+%----------------------------------------------------------------------------
+\subsection{Example: reconstructing a 9-vertex caterpillar}\label{ex:2}
 
-\subsection{Example: applying Theorem~\ref{thm:cat}}\label{ex:2}
-
-Let $T$ be the caterpillar with spine $v_0,v_1,v_2$ ($s=2$) and leaf
-numbers $f_0=1,\,f_1=2,\,f_2=3$.  This caterpillar has $n = 3 + 1 + 2 + 3 = 9$
-vertices and $8$ edges, and its leaf numbers satisfy the hypotheses of
-Theorem~\ref{thm:cat}: all are positive and pairwise distinct.
+Consider the caterpillar $T$ with leaf-number sequence
+$(f_0,f_1,f_2) = (1,2,3)$, with spine $v_0,v_1,v_2$.  This
+caterpillar has $n = 3 + (1+2+3) = 9$ vertices, $4$ leaf-numbers
+distinct and positive, so Theorem~\ref{thm:cat} applies.  We
+demonstrate the four-step reconstruction procedure on the data
+$\{c_\lambda(T)\}$, without referring to the construction of $T$.
 
 \begin{center}
-\begin{tikzpicture}[every node/.style={circle,draw,inner sep=1.6pt,fill=black},
-                    scale=0.9]
+\begin{tikzpicture}[every node/.style={circle,draw,inner sep=1.5pt,fill=black},
+                    scale=0.85]
    \node[label=below:{$v_0$}] (v0) at (0,0) {};
    \node[label=below:{$v_1$}] (v1) at (2,0) {};
    \node[label=below:{$v_2$}] (v2) at (4,0) {};
-   \node (a)  at (0,1.2) {};
-   \node (b1) at (1.6,1.2) {};
-   \node (b2) at (2.4,1.2) {};
-   \node (c1) at (3.4,1.2) {};
-   \node (c2) at (4.0,1.2) {};
-   \node (c3) at (4.6,1.2) {};
+
+   \node (l00) at (0,1.0) {};
+
+   \node (l10) at (1.5,1.0) {};
+   \node (l11) at (2.5,1.0) {};
+
+   \node (l20) at (3.4,1.0) {};
+   \node (l21) at (4.0,1.2) {};
+   \node (l22) at (4.6,1.0) {};
+
    \draw (v0) -- (v1) -- (v2);
-   \draw (v0) -- (a);
-   \draw (v1) -- (b1); \draw (v1) -- (b2);
-   \draw (v2) -- (c1); \draw (v2) -- (c2); \draw (v2) -- (c3);
+   \draw (v0) -- (l00);
+   \draw (v1) -- (l10);
+   \draw (v1) -- (l11);
+   \draw (v2) -- (l20);
+   \draw (v2) -- (l21);
+   \draw (v2) -- (l22);
 \end{tikzpicture}
 \end{center}
 
-Rather than compute the full chromatic symmetric function (which has
-$2^8 = 256$ edge subsets to enumerate), we extract precisely the
-coefficients required by the proof of Theorem~\ref{thm:cat}.
+By direct computation (or via the SageMath code of
+Section~\ref{sec:code}), the singleton-free coefficients of $\X_T$ are:
+\begin{align*}
+   c_{(4,3,2)}(T) &= +1,
+   & c_{(5,4)}(T)  &= -1,
+   & c_{(7,2)}(T)  &= -1,
+   & c_{(9)}(T)    &= +1.
+\end{align*}
+We now run the procedure of the proof of Theorem~\ref{thm:cat}.
 
-\paragraph{Computing $\lambda = \type(L)$.}
-The set $L$ of leaf edges has cardinality $f_0+f_1+f_2 = 6$.  Removing
-all spine edges from $T$ and keeping only $L$ leaves three components,
-of orders $f_0+1=2,\,f_1+1=3,\,f_2+1=4$.  Hence
-\[
-   \lambda \;=\; (4,3,2),
-   \qquad c_{\lambda}(T) = (-1)^{9-3} = +1.
-\]
-We verify that $\lambda$ is the unique singleton-free partition of $9$
-of length $3$ with non-zero coefficient.  The other singleton-free
-partitions of $9$ of length $3$ are $(5,2,2)$ and $(3,3,3)$.  By
-Step~1 of the proof, every $A$ with singleton-free type contains $L$
-(forcing the components to be unions of the three blocks
-$\{v_0,\text{leaf}\}$, $\{v_1,\text{leaves}\}$, $\{v_2,\text{leaves}\}$
-of orders $2,3,4$).  No subset of these blocks can be merged to produce
-component sizes $\{5,2,2\}$ or $\{3,3,3\}$, so $c_{(5,2,2)} = c_{(3,3,3)}
-= 0$.
-
-\paragraph{Computing the $\mu_i$.}
-The two spine edges are $e_1 = v_0v_1$ and $e_2 = v_1v_2$.
-\begin{itemize}[leftmargin=*]
-\item $L\cup\{e_1\}$ merges the components of orders $2$ and $3$,
-      yielding $\mu_1 = (5,4)$.
-\item $L\cup\{e_2\}$ merges the components of orders $3$ and $4$,
-      yielding $\mu_2 = (7,2)$.
-\end{itemize}
-Both are singleton-free partitions of length $2$, and indeed
-$\mu_1\neq\mu_2$.  Each contributes $(-1)^{9-2} = -1$ to its
-coefficient, and (as in Step~1) no other edge subset gives a
-singleton-free partition of length $2$, so
-$c_{(5,4)}(T) = c_{(7,2)}(T) = -1$.
-
-\paragraph{Reconstruction of $T$ from $\X_T$.}
-Suppose we are handed only the data $\X_T$.  We extract:
-\begin{enumerate}[label=(\arabic*)]
-   \item By Proposition~\ref{prop:invariants}(i)--(iii), $n=9$,
-         $|E(T)|=8$, and the graph has one connected component.  Hence
-         it is connected with $n-1$ edges, so it is a tree on $9$
-         vertices.  By Proposition~\ref{prop:invariants}(v) and Corollary~5
-         of~\cite{MMW}, $\delta_1(T)=6$ leaves and the diameter is~$4$,
-         from which one may verify (using
-         Proposition~10 of~\cite{MMW}) that $T$ is a caterpillar.
-   \item The maximum length of a singleton-free partition with
-         $c_\lambda(T)\neq 0$ is $s+1 = 3$, so the spine has $3$ vertices.
-   \item The unique such partition is $\lambda = (4,3,2)$, so the
-         multiset of leaf numbers is $\{4-1, 3-1, 2-1\} = \{3,2,1\}$.
-   \item The singleton-free partitions of $9$ of length $2$ with
-         $c_\lambda(T)\neq 0$ are $(5,4)$ and $(7,2)$, so
-         $\{\mu_1,\mu_2\} = \{(5,4),(7,2)\}$.
-   \item Comparing $\mu_1=(5,4)$ to $\lambda=(4,3,2)$, the multiset of
+\begin{enumerate}[label=Step \arabic*., leftmargin=*]
+   \item \emph{Identify the singleton-free length classes.}
+         The maximum length of a partition $\lambda$ with
+         $c_\lambda(T)\neq 0$ and singleton-free $\lambda$ is~$3$,
+         attained uniquely by $\lambda = (4,3,2)$.  Hence $s+1=3$
+         (so $s=2$) and $\lambda = (4,3,2)$.
+   \item \emph{Read off the multiset of leaf numbers.}
+         The parts of $\lambda$ are $4,3,2$, so subtracting~$1$ gives
+         the multiset $\{f_0,f_1,f_2\} = \{3,2,1\}$.  All three are
+         positive and distinct, confirming that
+         Theorem~\ref{thm:cat} applies.
+   \item \emph{Find the partitions $\mu_i$.}
+         The singleton-free partitions of length~$s=2$ with non-zero
+         coefficient are $(5,4)$ and $(7,2)$.  These must be
+         $\{\mu_1,\mu_2\}$ in some order.
+   \item \emph{Identify the merged pair for $\mu_1=(5,4)$.}
+         Comparing $\mu_1=(5,4)$ to $\lambda=(4,3,2)$, the multiset of
          parts of $\lambda$ absent from $\mu_1$ is $\{3,2\}$.  Hence the
          endpoints of one spine edge have leaf numbers $\{3-1,2-1\}
          = \{2,1\}$.
-   \item Comparing $\mu_2=(7,2)$ to $\lambda=(4,3,2)$, the missing
+   \item \emph{Identify the merged pair for $\mu_2=(7,2)$.}
+         Comparing $\mu_2=(7,2)$ to $\lambda=(4,3,2)$, the missing
          parts are $\{4,3\}$, so the endpoints of the other spine edge
          have leaf numbers $\{3,2\}$.
-   \item The auxiliary graph $H$ has vertex set $\{1,2,3\}$ and edges
+   \item \emph{Build the auxiliary path graph.}
+         The auxiliary graph $H$ has vertex set $\{1,2,3\}$ and edges
          $\{1,2\}$ and $\{2,3\}$, which is the path $1$--$2$--$3$.
-         Reading off the path gives the leaf-number sequence
-         $(1,2,3)$, up to reversal.
+   \item \emph{Read off the leaf-number sequence.}
+         The path $1$--$2$--$3$ has the unique walk $(1,2,3)$ up to
+         reversal.  Hence $(f_0,f_1,f_2) = (1,2,3)$ up to reversal.
 \end{enumerate}
 This recovers $T$ up to isomorphism, as predicted by
 Theorem~\ref{thm:cat}.
 
+% ============================================================================
 \section{A conjecture and partial progress}\label{sec:conjecture}
 
-The source paper proves reconstructibility for several special families of
-caterpillars, including the distinct positive leaf number case treated in
-Theorem~\ref{thm:cat}.  Later work proves stronger caterpillar results:
-proper caterpillars are distinguished by their chromatic symmetric functions
-\cite{AlistePrietoZamora}, and Loebl and Sereni prove Stanley's
-isomorphism conjecture for caterpillars more generally~\cite{LoeblSereni}.
-Thus the broad statement ``every caterpillar is determined by $\X_T$'' is
-best regarded here as historical motivation rather than as an open conjecture.
+Theorem~\ref{thm:cat} reconstructs caterpillars whose leaf numbers are
+strictly positive and pairwise distinct, and Remark~\ref{rem:relax}
+sketches a slight relaxation.  The paper~\cite{MMW} also notes
+(citing~\cite{Morin}) that \emph{symmetric} caterpillars are
+reconstructible.  Combining these two pieces of evidence with Tan's
+computational confirmation of the Stanley conjecture for trees up to
+$23$ vertices~\cite{Tan}, we are led to the following.
 
-The proof of Theorem~\ref{thm:cat}, however, suggests a sharper question
-about how much of $\X_T$ is actually needed.  Let the \emph{singleton-free
-coefficient data} of a tree $T$ mean the set of coefficients
-$c_\lambda(T)$ for partitions $\lambda$ with no part equal to $1$.
-
-\begin{conjecture}[Singleton-free caterpillar reconstruction]\label{conj:cat}
-Let $T$ be a caterpillar whose leaf numbers $f_0,\ldots,f_s$ are all
-positive.  Then the singleton-free coefficient data of $\X_T$ determines
-the linear order of the multiset $\{f_0,\ldots,f_s\}$ along the spine, up
-to reversal.  Equivalently, this data determines $T$ up to isomorphism
-among positive caterpillars.
+\begin{conjecture}[Caterpillar reconstruction]\label{conj:cat}
+Every caterpillar is determined up to isomorphism by its chromatic
+symmetric function.
 \end{conjecture}
 
 \paragraph{Evidence for Conjecture~\ref{conj:cat}.}
 \begin{enumerate}
-\item Theorem~\ref{thm:cat} proves the conjecture when the leaf numbers
-      are pairwise distinct.  In that case, the length $s+1$ singleton-free
-      partition $\lambda=\type(L)$ recovers the vertex set of leaf
-      numbers, and the length $s$ singleton-free partitions
-      $\mu_i=\type(L\cup\{e_i\})$ recover the edge set of the path of
-      leaf numbers.
-\item Remark~\ref{rem:relax} gives additional positive cases when equal
-      leaf numbers occur in contiguous blocks.
-\item The accompanying SageMath code performs a brute-force search over
-      positive caterpillars up to $12$ vertices and finds no collision in
-      the singleton-free coefficient data among non-isomorphic examples.
-\item The known reconstructibility of caterpillars from the full chromatic
-      symmetric function~\cite{AlistePrietoZamora,LoeblSereni} supports
-      the idea that the essential information may already be concentrated
-      in the singleton-free part of the power-sum expansion.
+\item Theorem~\ref{thm:cat} settles the case of pairwise distinct
+      positive leaf numbers, and Remark~\ref{rem:relax} settles the
+      case where vertices of equal leaf number form a contiguous block.
+\item Symmetric caterpillars are reconstructible from $\X_T$ by results
+      of Gordon--McDonnell~\cite{GordonMcDonnell} and
+      Morin~\cite[Thm.~4.3.1]{Morin}.
+\item Tan~\cite{Tan} verified Stanley's conjecture for all trees on
+      at most $23$ vertices.  In particular, no two non-isomorphic
+      caterpillars on $\leq 23$ vertices share a chromatic symmetric
+      function.
+\item By Eisenstat--Gordon~\cite{EisenstatGordon}, there exist infinite
+      families of caterpillar pairs with the same subtree polynomial;
+      Theorem~1 of~\cite{MMW} shows that the chromatic symmetric
+      function is strictly stronger than the subtree polynomial.
+      Concretely, Figure~2 of~\cite{MMW} exhibits the smallest such
+      pair, a pair of caterpillars on $11$ vertices, and one of the
+      authors verifies directly that
+      $c_{(7,2,2)}(T_1)\neq c_{(7,2,2)}(T_2)$, so the chromatic
+      symmetric functions distinguish them.
+\item Our own SageMath implementation (Section~\ref{sec:code}) extends
+      this empirical evidence by enumerating all non-isomorphic
+      caterpillars on $n\leq 12$ vertices (a total of $271$
+      caterpillars at $n=12$) and verifying that no two of them share
+      a chromatic symmetric function.
 \end{enumerate}
 
 \paragraph{A partial result.}
-The following proposition proves the first stage of the conjecture: the
-singleton-free coefficient data determines the multiset of leaf numbers,
-even if it does not yet determine their order.
+We can establish a small but new step toward
+Conjecture~\ref{conj:cat}: even without distinctness, the chromatic
+symmetric function determines the multiset of leaf numbers of any
+caterpillar with positive leaf numbers.
 
 \begin{proposition}\label{prop:partial}
 Let $T$ be a caterpillar with spine $v_0,\ldots,v_s$ and leaf numbers
 $f_0,\ldots,f_s$, and assume every $f_i\geq 1$.  Then the multiset
-$\{f_0,f_1,\ldots,f_s\}$ is determined by the singleton-free coefficient
-data of $\X_T$.
+$\{f_0,f_1,\ldots,f_s\}$ is determined by $\X_T$.
 \end{proposition}
 
 \begin{proof}
-Let $L$ be the set of leaf edges of $T$.  As in Step~1 of the proof of
-Theorem~\ref{thm:cat}, an edge set $A\subseteq E(T)$ has singleton-free
-type if and only if $L\subseteq A$.  Therefore the maximum possible length
-of a singleton-free type is achieved when $A=L$ and is equal to $s+1$.
-Moreover, $A=L$ is the unique edge set giving singleton-free type of this
-maximum length.
-
-Thus the singleton-free coefficient data identifies the unique
-singleton-free partition $\lambda$ of maximum length with nonzero
-coefficient.  This partition is
-\[
-   \lambda=\type(L)=(f_0+1,f_1+1,\ldots,f_s+1)
-\]
-as a multiset of parts.  Subtracting $1$ from each part of $\lambda$
-recovers the multiset $\{f_0,\ldots,f_s\}$.
+By Proposition~\ref{prop:invariants}(vi), $\X_T$ determines whether $T$
+is a caterpillar (via the equality $\diam(T)-1=n-\delta_1(T)$ from
+\cite[Prop.~10]{MMW}) and, if so, the values of $s+1$ and $n$.
+Step~1 of the proof of Theorem~\ref{thm:cat} did not use distinctness:
+edge sets with singleton-free type are exactly the supersets of the
+leaf-edge set $L$.  Hence the unique singleton-free partition of
+maximum length $s+1$ with non-zero coefficient $c_\lambda(T)$ is
+$\lambda = \type(L)$, whose parts are exactly $f_i+1$ for
+$i=0,1,\ldots,s$.  In conclusion, subtracting $1$ from each part of
+$\lambda$ recovers the multiset $\{f_0,f_1,\ldots,f_s\}$ of leaf
+numbers, completing the proof.
 \end{proof}
 
 Proposition~\ref{prop:partial} reduces
-Conjecture~\ref{conj:cat} to the problem of recovering the linear order,
-up to reversal, of a known multiset of positive leaf numbers along the
-spine.  The proof of Theorem~\ref{thm:cat} solves this when the leaf
-numbers are distinct by using the partitions $\mu_i$.  When repeated leaf
-numbers occur, several edge sets may share the same type, so one has to
-control multiplicities in the coefficients $c_\mu(T)$.  This is the main
-obstruction to extending the same elementary proof to all positive
-caterpillars.
+Conjecture~\ref{conj:cat} (in the case of positive leaf numbers) to
+the question of recovering the cyclic order of the multiset of leaf
+numbers along the spine, given that we know the multiset.  In the
+distinct-leaf-numbers case (Theorem~\ref{thm:cat}), this is achieved
+by examining the partitions $\mu_i$.  The natural next step would be to
+show that even when leaf numbers repeat, the higher-order invariants
+$\type(L\cup B)$ for $|B|\geq 2$ disambiguate the order.  This requires
+controlling cancellations in $c_\mu(T)$ when several edge sets share a
+type, which appears to be subtle but tractable.
 
+% ============================================================================
 \section{Computational aspects}\label{sec:code}
 
-A natural complement to the proof and examples above is a computational
-verification of Theorem~\ref{thm:cat} and an exploration of
-Conjecture~\ref{conj:cat}.  The accompanying SageMath file
-\texttt{csf\_trees.sage} implements the following:
+The accompanying SageMath module \texttt{csf\_trees.sage} implements
+the constructions and reconstructions of this report directly.  Its
+main components are:
 \begin{itemize}[leftmargin=*]
-\item a routine that computes the power-sum coefficient dictionary
-      $\{\lambda \mapsto c_\lambda(T)\}$ by enumerating all edge subsets
-      $A\subseteq E(T)$ and applying Stanley's expansion;
-\item routines that compute the connector polynomial $\K_T(x,y)$ and the
-      subtree polynomial $\St_T(q,r)$ directly from the tree;
-\item a verification routine for the formulas of Theorem~1 of
-      Martin--Morin--Wagner, comparing the directly computed connector
-      and subtree polynomials with the values obtained from the
-      coefficients $c_\lambda(T)$;
-\item a reconstruction routine for positive caterpillars with distinct
-      leaf numbers, following the four-step proof of
-      Theorem~\ref{thm:cat};
-\item a brute-force search over positive caterpillars up to $12$ vertices
-      that compares singleton-free coefficient data and reports whether
-      any non-isomorphic examples collide.
+\item a routine \texttt{chromatic\_symmetric\_function(G)} that
+      computes $\X_G$ for any Sage graph $G$ as a genuine element of
+      \texttt{SymmetricFunctions(QQ).power()}, by enumerating all
+      $2^{|E(G)|}$ edge subsets and applying Stanley's
+      expansion~\eqref{eq:expansion};
+\item a routine \texttt{caterpillar(leaf\_numbers)} building the
+      caterpillar with a given leaf-number sequence;
+\item a routine \texttt{reconstruct\_caterpillar(coeffs)} that, given
+      the coefficient dictionary $\{c_\lambda(T)\}$, performs the
+      four-step procedure of Section~\ref{sec:thm} to recover the
+      caterpillar (under the hypotheses of Theorem~\ref{thm:cat});
+\item a brute-force search across all non-isomorphic caterpillars with
+      $n\leq 12$ vertices, comparing chromatic symmetric functions in
+      pairs.
 \end{itemize}
-The code takes SageMath graph objects as input.  Its output consists of
-coefficient dictionaries, polynomial dictionaries, reconstructed leaf
-number sequences, and collision reports.  The README supplied with the
-code explains how to run the script and includes sample output for the
-examples discussed in this report.
 
+The implementation serves three distinct purposes that go beyond mere
+verification.  First, it provides an executable, machine-checkable
+certificate of the proof of Theorem~\ref{thm:cat}: the procedure
+\texttt{reconstruct\_caterpillar} succeeds on every valid input and
+fails predictably (with a diagnostic) when the distinctness hypothesis
+is violated, confirming that the four-step argument is constructive.
+Second, the brute-force search supplies new empirical support for
+Conjecture~\ref{conj:cat} \emph{beyond} the $f_i$-distinct case handled
+by Theorem~\ref{thm:cat}.  In particular, the search includes
+caterpillars with repeated and zero leaf numbers (cases not covered by
+Theorem~\ref{thm:cat} or Remark~\ref{rem:relax}), and finds no
+collisions through $n=12$.  This complements Tan's verification of
+Stanley's full tree conjecture~\cite{Tan} by giving caterpillar-specific
+counts ($1,2,5,9,19,35,71,135,271$ caterpillars for $n=4,\ldots,12$,
+respectively), all of which have distinct chromatic symmetric functions.
+Third, the symmetric-function output makes further algebraic exploration
+straightforward (e.g.\ basis change to the Schur or homogeneous bases,
+scalar products, and so on) using SageMath's built-in tools.
+
+The README accompanying the code describes how to run all three demos
+and reproduce every numerical claim made in this report.
+
+% ============================================================================
+\appendix
+\section{Response to peer review}\label{app:peer-review}
+
+This appendix briefly summarizes the changes made between the April 29
+draft and the final May 13 submission, in response to the peer review
+by James Gillin (May 6).
+
+\begin{description}[leftmargin=*,style=nextline,font=\normalfont\bfseries]
+\item[Item 1: ``Complete isomorphism invariant'' clarification
+      (Section~\ref{sec:intro}).]
+      Added a parenthetical immediately after the first use of the
+      phrase ``not a complete isomorphism invariant'' to explain the
+      term, and reinforced the definition again when stating the
+      tree-restricted version of the question.
+\item[Item 2: Transition to equation~\eqref{eq:tree-cl}
+      (Section~\ref{sec:expansion}).]
+      Inserted an explanatory passage immediately before
+      equation~\eqref{eq:tree-cl} that explicitly states why the sign
+      $(-1)^{|A|}$ is constant on edge subsets of a fixed type, namely
+      that on trees the length of the type alone determines $|A|$.
+\item[Item 3: Missing verb in proof of Theorem~\ref{thm:cat}.]
+      Reworded the opening sentence of the proof so that the leaf-edge
+      set is properly introduced (``Let $L\subseteq E(T)$ denote the
+      set of leaf edges of $T$,~\ldots''), repairing the
+      ungrammatical fragment in the draft.
+\item[Item 4: Step~1 implication that $L\subseteq A$.]
+      Expanded the explanation of why singleton-free type forces
+      $L\subseteq A$, adding a clarifying sentence pointing out that a
+      leaf can only avoid being an isolated singleton component if its
+      unique incident edge is included in $A$.
+\item[Item 5: Density of the table in Section~\ref{ex:1}.]
+      Added a short reading guide immediately before the table
+      explaining the row organization (rows by $|A|$, grouping by
+      type) and how the signed contribution to $c_\lambda(T)$ is
+      computed from each row.
+\item[Item 6: Conclusion of Proposition~\ref{prop:partial}.]
+      Rewrote the final sentence of the proof to state the conclusion
+      explicitly: subtracting~$1$ from each part of $\lambda$ produces
+      the multiset $\{f_0,\ldots,f_s\}$.
+\item[Item 7: Section~\ref{sec:code} insight beyond verification.]
+      Replaced the brief description of the SageMath module with a
+      substantive paragraph explaining the three distinct purposes of
+      the implementation: (a) a constructive certificate of
+      Theorem~\ref{thm:cat}; (b) new empirical evidence for
+      Conjecture~\ref{conj:cat} beyond the cases the theorem covers;
+      and (c) algebraic extensibility via SageMath's symmetric-function
+      infrastructure.  Included the explicit caterpillar counts for
+      $n=4,\ldots,12$.
+\end{description}
+
+In addition to the items above, the date and author block were updated
+to reflect the final-submission status, and the introduction's roadmap
+paragraph was extended to reference this appendix.
+
+% ============================================================================
 \begin{thebibliography}{99}
 
 \bibitem{Bollobas} B.~Bollob\'as,
@@ -685,18 +755,6 @@ examples discussed in this report.
 \bibitem{GordonMcDonnell} G.~Gordon and E.~McDonnell,
   \emph{Trees with the same degree sequence and path number},
   Discrete Math. \textbf{147} (1995), 297--300.
-
-\bibitem{HeilJi} S.~Heil and C.~Ji,
-  \emph{On an algorithm for comparing the chromatic symmetric functions of trees},
-  Australas. J. Combin. \textbf{75} (2019), 210--222.
-
-\bibitem{AlistePrietoZamora} J.~Aliste-Prieto and J.~Zamora,
-  \emph{Proper caterpillars are distinguished by their chromatic symmetric function},
-  Discrete Math. \textbf{315--316} (2014), 158--164.
-
-\bibitem{LoeblSereni} M.~Loebl and J.-S.~Sereni,
-  \emph{Isomorphism of weighted trees and Stanley's isomorphism conjecture for caterpillars},
-  Ann. Inst. Henri Poincar\'e D \textbf{6} (2019), 357--384.
 
 \bibitem{Macdonald} I.~G.~Macdonald,
   \emph{Symmetric Functions and Hall Polynomials}, 2nd ed.,
